@@ -1,0 +1,27 @@
+{
+  "best_model_name": "XGBoost",
+  "cv_f1_mean": 0.9025515303078239,
+  "cv_f1_std": 0.009853630315933887,
+  "feature_names": [
+    "vibration_rms",
+    "temperature_motor",
+    "current_phase_avg",
+    "pressure_level",
+    "rpm",
+    "hours_since_maintenance",
+    "ambient_temp",
+    "machine_type_CNC",
+    "machine_type_Compressor",
+    "machine_type_Pump",
+    "machine_type_Robotic Arm",
+    "operating_mode_idle",
+    "operating_mode_normal",
+    "operating_mode_peak"
+  ],
+  "model_names": [
+    "Logistic Regression",
+    "Random Forest",
+    "XGBoost",
+    "MLP (Deep Learning)"
+  ]
+}
