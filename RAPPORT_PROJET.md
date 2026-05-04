@@ -1,8 +1,7 @@
 # Rapport de Projet — Maintenance Prédictive Industrielle
 **Système Intelligent Multi-Modèles pour la Maintenance Prédictive Industrielle**
 
-*Projet M2 Data Science — EFREI 2025-26*
-*Épreuve certifiante RNCP36739 — Bloc 4*
+*Projet M2 Data Science — Khalil DJAHEL/Bryan BONTRAIN*
 
 ---
 
@@ -111,7 +110,7 @@ Trois variables ont été supprimées :
 
 ![*Figure 1 — Distribution de la variable cible. Le déséquilibre est significatif (ratio 5.75:1). Un modèle naïf qui prédit toujours "pas de panne" aurait 85.2% d'Accuracy mais détecterait 0 panne.*](saved_models/figures/eda_target_distribution.png)
 
-Le dataset présente un **déséquilibre significatif** (ratio ~5.75:1). Ce déséquilibre est réaliste dans un contexte industriel : les pannes sont des événements rares. Sans traitement, les modèles tendraient à prédire systématiquement "pas de panne" et afficheraient 85% d'accuracy sans jamais détecter une panne réelle — ce qui est parfaitement inutile.
+Le dataset présente un **déséquilibre significatif** (ratio ~5.75:1). Ce déséquilibre est réaliste dans un contexte industriel : les pannes sont des événements rares. Sans traitement, les modèles tendraient à prédire systématiquement "pas de panne" et afficheraient 85% d'accuracy sans jamais détecter une panne réelle ce qui est parfaitement inutile.
 
 ### 3.2 Répartition par type de machine
 
@@ -177,7 +176,7 @@ ColumnTransformer (ajusté sur TRAIN uniquement, appliqué sur TEST)
 
 Le mot **"stratifié"** signifie que la proportion de pannes (14.8%) est préservée identiquement dans le train set et le test set. Sans stratification, par malchance, les pannes pourraient se retrouver davantage dans un ensemble que dans l'autre, faussant les résultats.
 
-### 4.2 Prévention du data leakage — sklearn Pipelines
+### 4.2 Prévention du data leakage (sklearn Pipelines)
 
 L'ensemble du preprocessing est intégré dans des **sklearn Pipelines**. Cela garantit que toutes les statistiques de preprocessing (médiane pour l'imputation, moyenne/écart-type pour le StandardScaler, catégories pour l'OneHotEncoder) sont calculées **uniquement sur les données d'entraînement**, puis appliquées (transformées) sur le test set sans que le modèle ait jamais "vu" les données de test pendant l'entraînement.
 
@@ -186,28 +185,28 @@ L'ensemble du preprocessing est intégré dans des **sklearn Pipelines**. Cela g
 | Modèle | Stratégie | Explication |
 |---|---|---|
 | Logistic Regression | `class_weight='balanced'` | sklearn recalcule des poids inversement proportionnels à la fréquence de chaque classe |
-| Random Forest | `class_weight='balanced'` | Idem — chaque panne compte 5.75× plus qu'une non-panne |
+| Random Forest | `class_weight='balanced'` | Idem chaque panne compte 5.75× plus qu'une non-panne |
 | XGBoost | `scale_pos_weight=5.75` | Paramètre natif : ratio 20 482 / 3 560 ≈ 5.75 |
 | MLP | `early_stopping=True` | Arrête l'entraînement quand les performances se dégradent, évitant l'overfitting sur la classe majoritaire |
 
-### 4.4 Métriques d'évaluation — définitions et formules
+### 4.4 Métriques d'évaluation (définitions et formules)
 
 Les 4 cas de figure possibles pour chaque prédiction :
 
 | | Prédit : PAS de panne | Prédit : PANNE |
 |---|---|---|
-| **Réel : PAS de panne** | ✅ **TN** — Vrai Négatif | ❌ **FP** — Faux Positif (fausse alerte) |
-| **Réel : PANNE** | ❌ **FN** — Faux Négatif (panne ratée !) | ✅ **TP** — Vrai Positif |
+| **Réel : PAS de panne** | **TN** — Vrai Négatif | **FP** — Faux Positif (fausse alerte) |
+| **Réel : PANNE** | **FN** — Faux Négatif (panne ratée !) | **TP** — Vrai Positif |
 
 > **Dans un contexte industriel, le FN est le pire cas** : le modèle dit "tout va bien" alors qu'une panne arrive → arrêt brutal, coûts d'urgence, risques de sécurité.
 
-**Recall (métrique prioritaire)** = TP / (TP + FN) — *Parmi toutes les vraies pannes, combien le modèle en détecte ?*
+**Recall (métrique prioritaire)** = TP / (TP + FN) *Parmi toutes les vraies pannes, combien le modèle en détecte ?*
 
-**Precision** = TP / (TP + FP) — *Parmi toutes les alertes, quelle proportion est justifiée ?*
+**Precision** = TP / (TP + FP) *Parmi toutes les alertes, quelle proportion est justifiée ?*
 
-**F1-Score** = 2 × (Precision × Recall) / (Precision + Recall) — *Moyenne harmonique, critère de sélection du modèle*
+**F1-Score** = 2 × (Precision × Recall) / (Precision + Recall) *Moyenne harmonique, critère de sélection du modèle*
 
-**ROC-AUC** — Aire sous la courbe ROC. La courbe représente, pour tous les seuils possibles, le Recall (axe Y) vs le taux de faux positifs (axe X). AUC = 1 → modèle parfait. AUC = 0.5 → modèle aléatoire.
+**ROC-AUC** Aire sous la courbe ROC. La courbe représente, pour tous les seuils possibles, le Recall (axe Y) vs le taux de faux positifs (axe X). AUC = 1 → modèle parfait. AUC = 0.5 → modèle aléatoire.
 
 ### 4.5 Validation croisée
 
@@ -217,7 +216,7 @@ Une **cross-validation stratifiée 5-fold** a été appliquée sur le modèle re
 
 ## 5. Modèles implémentés
 
-### 5.1 Logistic Regression — Modèle baseline
+### 5.1 Logistic Regression - Modèle baseline
 
 **Principe interne :** calcule une combinaison linéaire pondérée des features (`z = w₁×vibration + w₂×température + ...`), puis applique la fonction sigmoïde σ(z) = 1/(1+e^(-z)) pour obtenir une probabilité entre 0 et 1. Le modèle apprend les coefficients w pendant l'entraînement.
 
@@ -229,7 +228,7 @@ Une **cross-validation stratifiée 5-fold** a été appliquée sur le modèle re
 
 **Rôle :** baseline de référence. Si ce modèle était le meilleur, le problème serait linéairement séparable et les modèles complexes seraient inutiles.
 
-### 5.2 Random Forest — Modèle ensembliste (Bagging)
+### 5.2 Random Forest - Modèle ensembliste (Bagging)
 
 **Principe interne :** construit 200 arbres de décision **indépendants**, chacun entraîné sur un sous-échantillon aléatoire des données (bagging). Chaque arbre pose des questions binaires (`vibration_rms > 2.3 ?`) jusqu'à une décision finale. La prédiction finale = **moyenne des 200 probabilités** (vote).
 
@@ -255,7 +254,7 @@ Différence clé avec Random Forest : les arbres ne sont **pas indépendants**, 
 
 ### 5.4 MLP — Deep Learning (Réseau de neurones multicouche)
 
-**Principe interne :** réseau de neurones artificiels avec 3 couches cachées. Chaque neurone calcule `z = Σ(wᵢ×xᵢ) + b` puis applique ReLU : `f(z) = max(0, z)`. L'entraînement utilise la rétropropagation (backpropagation) — à chaque exemple, l'erreur remonte couche par couche pour ajuster tous les poids.
+**Principe interne :** réseau de neurones artificiels avec 3 couches cachées. Chaque neurone calcule `z = Σ(wᵢ×xᵢ) + b` puis applique ReLU : `f(z) = max(0, z)`. L'entraînement utilise la rétropropagation (backpropagation) à chaque exemple, l'erreur remonte couche par couche pour ajuster tous les poids.
 
 **Architecture :** Input (11 features) → 128 neurones → 64 → 32 → Output (sigmoïde → probabilité)
 
@@ -278,16 +277,16 @@ Différence clé avec Random Forest : les arbres ne sont **pas indépendants**, 
 | **XGBoost** ✔ | **0.968** | 0.847 | **0.955** | **0.898** | **0.996** |
 | MLP (Deep Learning) | 0.955 | **0.847** | 0.853 | 0.850 | 0.984 |
 
-![*Figure 5 — Comparaison des 5 métriques pour les 4 modèles. XGBoost domine sur Recall, F1 et ROC-AUC. La progression Logistic Regression → Random Forest → XGBoost illustre le gain apporté par chaque niveau de complexité.*](saved_models/figures/metrics_comparison.png)
+![*Figure 5 Comparaison des 5 métriques pour les 4 modèles. XGBoost domine sur Recall, F1 et ROC-AUC. La progression Logistic Regression → Random Forest → XGBoost illustre le gain apporté par chaque niveau de complexité.*](saved_models/figures/metrics_comparison.png)
 
-### 6.2 Courbes ROC — comparaison des 4 modèles
+### 6.2 Courbes ROC comparaison des 4 modèles
 
 ![*Figure 6 — Courbes ROC des 4 modèles. XGBoost atteint AUC = 0.996, très proche du point idéal (coin supérieur gauche). La diagonale représente un modèle aléatoire (AUC = 0.5).*](saved_models/figures/roc_curves.png)
 
 ### 6.3 Analyse des résultats
 
 **Logistic Regression :**
-La Precision faible (0.641) indique de nombreuses fausses alertes. La limitation linéaire du modèle ne permet pas de capturer les interactions complexes entre capteurs. **Son rôle est confirmé : tous les autres modèles le surpassent significativement** (+0.14 F1 pour Random Forest).
+La Precision faible (0.641) indique de nombreuses fausses alertes. La limitation linéaire du modèle ne permet pas de capturer les interactions complexes entre capteurs. Son rôle est confirmé : tous les autres modèles le surpassent significativement (+0.14 F1 pour Random Forest).
 
 **Random Forest :**
 Excellentes performances (F1=0.887, ROC-AUC=0.993). Le gain de +0.14 F1 par rapport à la régression logistique confirme la présence de relations non linéaires dans les données. Cependant, XGBoost le surpasse sur tous les critères, et son volume (21 MB vs 600 KB) pénalise le déploiement.
@@ -298,15 +297,15 @@ Meilleur compromis toutes métriques confondues. Le **Recall de 0.955** signifie
 **MLP (Deep Learning) :**
 F1=0.850, inférieur à XGBoost. Avec 24 000 observations et 9 features structurées, les arbres boostés ont l'avantage. Le Deep Learning excelle sur des données non structurées (images, texte) ou des séries temporelles longues.
 
-### 6.4 Matrices de confusion — comparaison des 4 modèles
+### 6.4 Matrices de confusion - comparaison des 4 modèles
 
 ![*Figure 7a — Matrice de confusion : Logistic Regression. Nombreux FP (fausses alertes) dûs à la précision faible (0.641).*](saved_models/figures/cm_Logistic_Regression.png)
 
 ![*Figure 7b — Matrice de confusion : Random Forest. Bon équilibre FP/FN, performances solides.*](saved_models/figures/cm_Random_Forest.png)
 
-![*Figure 7c — Matrice de confusion : XGBoost (modèle retenu). FN minimal (~161) → 95.5% des pannes détectées. C'est le cas le plus critique industriellement.*](saved_models/figures/cm_XGBoost.png)
+![*Figure 7c - Matrice de confusion : XGBoost (modèle retenu). FN minimal (~161) → 95.5% des pannes détectées. C'est le cas le plus critique industriellement.*](saved_models/figures/cm_XGBoost.png)
 
-![*Figure 7d — Matrice de confusion : MLP Deep Learning. Recall (0.853) inférieur à XGBoost — davantage de pannes manquées.*](saved_models/figures/cm_MLP_Deep_Learning.png)
+![*Figure 7d - Matrice de confusion : MLP Deep Learning. Recall (0.853) inférieur à XGBoost - davantage de pannes manquées.*](saved_models/figures/cm_MLP_Deep_Learning.png)
 
 ### 6.5 Cross-validation XGBoost (5-fold stratifié)
 
@@ -326,13 +325,13 @@ L'écart-type de 0.01 confirme que le modèle est **stable** : les performances 
 
 | Critère | Évaluation |
 |---|---|
-| Performance (F1, ROC-AUC) | ✅ Meilleur de tous les modèles |
-| Recall (détection des pannes) | ✅ 0.955 — crucial en contexte industriel |
-| Stabilité (CV 5-fold) | ✅ Faible variance entre folds (0.0099) |
-| Gestion du déséquilibre | ✅ `scale_pos_weight` natif |
-| Interprétabilité | ✅ Feature importance + SHAP (TreeExplainer) |
-| Coût computationnel | ✅ Entraînement ~30 secondes |
-| Déploiement | ✅ Sérialisation joblib légère (~600 KB vs 21 MB pour RF) |
+| Performance (F1, ROC-AUC) |  Meilleur de tous les modèles |
+| Recall (détection des pannes) |  0.955 — crucial en contexte industriel |
+| Stabilité (CV 5-fold) |  Faible variance entre folds (0.0099) |
+| Gestion du déséquilibre |  `scale_pos_weight` natif |
+| Interprétabilité |  Feature importance + SHAP (TreeExplainer) |
+| Coût computationnel |  Entraînement ~30 secondes |
+| Déploiement |  Sérialisation joblib légère (~600 KB vs 21 MB pour RF) |
 
 ---
 
@@ -350,9 +349,9 @@ Tout modèle de Machine Learning est confronté à un compromis fondamental :
 
 | Modèle | Biais | Variance | Diagnostic |
 |---|---|---|---|
-| **Logistic Regression** | Élevé | Faible | Underfitting — modèle trop simple pour les non-linéarités |
-| **Random Forest** | Faible | Faible | Bon équilibre — le bagging réduit la variance naturellement |
-| **XGBoost** | Faible | Très faible | Excellent équilibre — régularisation L1/L2 intégrée |
+| **Logistic Regression** | Élevé | Faible | Underfitting modèle trop simple pour les non-linéarités |
+| **Random Forest** | Faible | Faible | Bon équilibre le bagging réduit la variance naturellement |
+| **XGBoost** | Faible | Très faible | Excellent équilibre régularisation L1/L2 intégrée |
 | **MLP (Deep Learning)** | Modéré | Modéré | Risque d'overfitting sur classe majoritaire → `early_stopping` appliqué |
 
 ### 7.3 Mesures prises pour contrôler l'overfitting
@@ -363,7 +362,7 @@ Tout modèle de Machine Learning est confronté à un compromis fondamental :
 
 ### 7.4 Preuve empirique de l'absence d'overfitting
 
-La cross-validation (5-fold) sur XGBoost donne F1 = **0.9026 ± 0.0099** sur données jamais vues pendant l'entraînement. Le score sur le test set est 0.898 — très proche. Un modèle en overfitting montrerait un écart important entre train et test. La faible variance (0.0099) confirme la bonne généralisation.
+La cross-validation (5-fold) sur XGBoost donne F1 = **0.9026 ± 0.0099** sur données jamais vues pendant l'entraînement. Le score sur le test set est 0.898 très proche. Un modèle en overfitting montrerait un écart important entre train et test. La faible variance (0.0099) confirme la bonne généralisation.
 
 ---
 
@@ -373,7 +372,7 @@ La cross-validation (5-fold) sur XGBoost donne F1 = **0.9026 ± 0.0099** sur don
 
 L'importance des variables est calculée par le **gain moyen** apporté par chaque variable lors des splits dans tous les arbres. Plus une variable est utilisée fréquemment et apporte un gain élevé, plus elle est "importante".
 
-![*Figure 8 — Importance des features pour le modèle XGBoost. Les 5 variables les plus importantes sont cohérentes avec la physique industrielle : vibration, température et usure accumulée dominent les prédictions.*](saved_models/figures/feature_importance.png)
+![*Figure 8 - Importance des features pour le modèle XGBoost. Les 5 variables les plus importantes sont cohérentes avec la physique industrielle : vibration, température et usure accumulée dominent les prédictions.*](saved_models/figures/feature_importance.png)
 
 **Top 5 variables :**
 1. **`vibration_rms`** — indicateur principal de dégradation mécanique (roulements, balourd, desserrage)
@@ -388,7 +387,7 @@ Ces résultats sont **cohérents avec la physique des machines industrielles**, 
 
 La Feature Importance donne une vision globale. SHAP va plus loin en expliquant **chaque prédiction individuelle**, en décomposant la prédiction en contributions de chaque feature (basé sur la théorie des jeux coopératifs).
 
-![*Figure 9 — SHAP Summary Plot (300 observations du test set). Axe X = impact sur la prédiction (positif = augmente le risque). Couleur = valeur de la feature (rouge = élevée, bleu = faible). Une vibration_rms élevée (rouge, droite) augmente fortement la probabilité de panne. Un hours_since_maintenance faible (bleu, gauche) réduit le risque.*](saved_models/figures/shap_summary.png)
+![*Figure 9 - SHAP Summary Plot (300 observations du test set). Axe X = impact sur la prédiction (positif = augmente le risque). Couleur = valeur de la feature (rouge = élevée, bleu = faible). Une vibration_rms élevée (rouge, droite) augmente fortement la probabilité de panne. Un hours_since_maintenance faible (bleu, gauche) réduit le risque.*](saved_models/figures/shap_summary.png)
 
 **Lecture du graphique :**
 - **Axe X positif** → contribue à prédire "panne"
@@ -416,15 +415,15 @@ Le dashboard Streamlit a été conçu comme un **outil décisionnel autonome**, 
 
 | Onglet | Contenu | Valeur métier |
 |---|---|---|
-| 📊 EDA | Distributions, corrélations, manquants | Compréhension des données machine |
-| 🤖 Modèles | Tableau, ROC, matrices de confusion | Confiance dans le système |
-| 🔮 Prédiction | Formulaire capteurs → score de risque | Usage opérationnel quotidien |
-| 🔍 Interprétabilité | Feature importance, SHAP | Explicabilité des alertes |
+| EDA | Distributions, corrélations, manquants | Compréhension des données machine |
+| Modèles | Tableau, ROC, matrices de confusion | Confiance dans le système |
+| Prédiction | Formulaire capteurs → score de risque | Usage opérationnel quotidien |
+| Interprétabilité | Feature importance, SHAP | Explicabilité des alertes |
 
-### 9.2 Cas d'usage — Prédiction en temps réel
+### 9.2 Cas d'usage - Prédiction en temps réel
 
 Un responsable maintenance entre les valeurs des capteurs d'une machine suspecte. Le dashboard affiche :
-- **Score de risque coloré** : 🔴 ÉLEVÉ (probabilité > 60%)
+- **Score de risque coloré** : ÉLEVÉ (probabilité > 60%)
 - **Probabilité exacte** : ex. 78.3%
 - **Recommandation** : Intervention recommandée dans les 24h
 
@@ -489,8 +488,3 @@ Avec un Recall de 95.5%, le système permettrait :
 - De **détecter 19 pannes sur 20** avant leur survenue
 - De planifier des interventions préventives à moindre coût
 - De réduire les arrêts non planifiés et leurs impacts sur la production
-
----
-
-*Rapport rédigé dans le cadre du Projet M2 Data Science — EFREI 2025-26*
-*Validation RNCP36739 — Bloc 4 : Implémenter des méthodes d'intelligence artificielle*
