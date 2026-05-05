@@ -1,5 +1,5 @@
 # Guide Utilisateur — Maintenance Prédictive Industrielle
-**Projet M2 Data Science — EFREI 2025-26**
+Projet M2 Data Science — EFREI 2025-26
 
 ---
 
@@ -19,12 +19,13 @@
 
 ## 1. Prérequis
 
-- **Python 3.10 ou supérieur**
-- **pip** (gestionnaire de paquets Python)
-- Le fichier dataset : `predictive_maintenance_v3.csv` (placé à la racine du projet)
-  - Source : https://www.kaggle.com/datasets/tatheerabbas/industrial-machine-predictive-maintenance
+- Python 3.10 ou supérieur
+- pip (gestionnaire de paquets Python)
+- Le fichier dataset `predictive_maintenance_v3.csv` placé à la racine du projet
 
-Vérifier la version Python :
+Source du dataset : https://www.kaggle.com/datasets/tatheerabbas/industrial-machine-predictive-maintenance
+
+Vérifier la version Python installée :
 ```bash
 python --version
 ```
@@ -33,7 +34,7 @@ python --version
 
 ## 2. Installation
 
-### 2.1 Cloner / copier le projet
+### 2.1 Cloner ou copier le projet
 
 Placer tous les fichiers dans un dossier, par exemple :
 ```
@@ -48,6 +49,7 @@ pip install -r requirements.txt
 ```
 
 Paquets installés :
+
 | Paquet | Rôle |
 |---|---|
 | `pandas` | Manipulation des données |
@@ -57,7 +59,7 @@ Paquets installés :
 | `shap` | Explicabilité des modèles |
 | `matplotlib` / `seaborn` | Visualisations |
 | `streamlit` | Dashboard interactif |
-| `joblib` | Sauvegarde / chargement des modèles |
+| `joblib` | Sauvegarde et chargement des modèles |
 
 ### 2.3 Vérifier l'installation
 
@@ -71,39 +73,39 @@ python -c "import sklearn, xgboost, shap, streamlit; print('OK')"
 
 ```
 projet data science/
-│
-├── predictive_maintenance_v3.csv     ← Dataset (à placer ici)
-├── main.py                           ← Pipeline principal d'entraînement
-├── requirements.txt                  ← Dépendances Python
-│
-├── src/                              ← Code source modulaire
-│   ├── __init__.py
-│   ├── preprocessing.py              ← Pipeline de préparation des données
-│   ├── models.py                     ← Définition des 4 modèles ML/DL
-│   └── evaluation.py                 ← Métriques, figures, SHAP
-│
-├── dashboard/
-│   └── app.py                        ← Application Streamlit
-│
-└── saved_models/                     ← Généré après main.py
-    ├── best_model.pkl                ← Meilleur modèle sauvegardé
-    ├── XGBoost.pkl
-    ├── Random_Forest.pkl
-    ├── Logistic_Regression.pkl
-    ├── MLP_Deep_Learning.pkl
-    ├── model_comparison.csv          ← Tableau des performances
-    ├── metadata.json                 ← Infos sur le meilleur modèle
-    ├── shap_values.npy               ← Valeurs SHAP précalculées
-    ├── shap_X_sample.npy
-    └── figures/                      ← Toutes les figures générées
-        ├── roc_curves.png
-        ├── metrics_comparison.png
-        ├── feature_importance.png
-        ├── shap_summary.png
-        ├── cm_XGBoost.png
-        ├── cm_Random_Forest.png
-        ├── cm_Logistic_Regression.png
-        └── cm_MLP_Deep_Learning.png
+|
+|-- predictive_maintenance_v3.csv     (dataset, a placer ici)
+|-- main.py                           (pipeline principal d'entrainement)
+|-- requirements.txt                  (dependances Python)
+|
+|-- src/                              (code source modulaire)
+|   |-- __init__.py
+|   |-- preprocessing.py              (pipeline de preparation des donnees)
+|   |-- models.py                     (definition des 4 modeles ML/DL)
+|   |-- evaluation.py                 (metriques, figures, SHAP)
+|
+|-- dashboard/
+|   |-- app.py                        (application Streamlit)
+|
+|-- saved_models/                     (genere apres execution de main.py)
+    |-- best_model.pkl
+    |-- XGBoost.pkl
+    |-- Random_Forest.pkl
+    |-- Logistic_Regression.pkl
+    |-- MLP_Deep_Learning.pkl
+    |-- model_comparison.csv          (tableau des performances)
+    |-- metadata.json                 (informations sur le meilleur modele)
+    |-- shap_values.npy               (valeurs SHAP precalculees)
+    |-- shap_X_sample.npy
+    |-- figures/                      (toutes les figures generees)
+        |-- roc_curves.png
+        |-- metrics_comparison.png
+        |-- feature_importance.png
+        |-- shap_summary.png
+        |-- cm_XGBoost.png
+        |-- cm_Random_Forest.png
+        |-- cm_Logistic_Regression.png
+        |-- cm_MLP_Deep_Learning.png
 ```
 
 ---
@@ -114,39 +116,33 @@ projet data science/
 
 Ce fichier centralise toute la logique de préparation des données.
 
-**Ce qu'il fait :**
-- Définit le chemin vers le dataset (`DATA_PATH`)
-- Définit la variable cible : `failure_within_24h`
-- Identifie les colonnes à supprimer pour éviter le **data leakage** :
-  - `timestamp`, `machine_id` → identifiants, pas des prédicteurs
-  - `failure_type` → révèle directement le type de panne → leakage
-  - `rul_hours` → durée de vie restante encode directement la réponse
-  - `estimated_repair_cost` → corrélé à l'occurrence de panne
-- Construit le pipeline sklearn via `ColumnTransformer` :
-  - **Variables numériques** (7) : imputation par la médiane + StandardScaler
-  - **Variables catégorielles** (2 : `machine_type`, `operating_mode`) : imputation par le mode + OneHotEncoder
+Il définit le chemin vers le dataset (`DATA_PATH`) et la variable cible `failure_within_24h`. Il identifie également les colonnes à supprimer pour éviter le data leakage :
 
-**Pourquoi la médiane et non la moyenne ?**
-Les valeurs aberrantes dans les capteurs industriels (pics de vibration, de température) rendent la médiane plus robuste que la moyenne pour l'imputation.
+- `timestamp` et `machine_id` sont de simples identifiants, pas des prédicteurs utiles
+- `failure_type` révèle directement qu'une panne est en cours, ce qui rendrait la prédiction triviale
+- `rul_hours` encode implicitement la cible (quand la durée de vie restante est inférieure à 24h, la panne est quasi certaine)
+- `estimated_repair_cost` est calculé après la panne, donc indisponible en temps réel
+
+Le pipeline sklearn est construit via un `ColumnTransformer` avec deux branches :
+- Variables numériques (7) : imputation par la médiane puis StandardScaler
+- Variables catégorielles (2, `machine_type` et `operating_mode`) : imputation par le mode puis OneHotEncoder
+
+La médiane est préférée à la moyenne pour l'imputation car les capteurs industriels génèrent régulièrement des pics de vibration ou de température qui fausseraient une moyenne.
 
 ---
 
 ### `src/models.py`
 
-Définit les 4 modèles, chacun intégré dans un `sklearn.Pipeline` :
+Définit les quatre modèles, chacun encapsulé dans un `sklearn.Pipeline` :
 
-| Modèle | Paramètres clés | Justification |
+| Modèle | Paramètres clés | Rôle |
 |---|---|---|
-| **Logistic Regression** | `class_weight='balanced'`, `max_iter=1000` | Baseline interprétable, robuste |
-| **Random Forest** | 200 arbres, `class_weight='balanced'` | Capture les non-linéarités, feature importance native |
-| **XGBoost** | `scale_pos_weight=5.75` (ratio d'imbalance) | Boosting itératif, meilleure performance |
-| **MLP (Deep Learning)** | Couches (128→64→32), `early_stopping=True` | Réseau de neurones profond, apprentissage automatique des représentations |
+| Logistic Regression | `class_weight='balanced'`, `max_iter=1000` | Baseline interprétable |
+| Random Forest | 200 arbres, `class_weight='balanced'` | Capture les non-linéarités |
+| XGBoost | `scale_pos_weight=5.75` | Boosting itératif, meilleure performance |
+| MLP (Deep Learning) | Couches 128, 64, 32, `early_stopping=True` | Réseau de neurones multicouche |
 
-**Gestion du déséquilibre de classes :**
-Le dataset contient 85% de non-pannes et 15% de pannes. Sans correction, les modèles auraient tendance à ignorer les pannes. Solutions appliquées :
-- `class_weight='balanced'` pour Logistic Regression et Random Forest
-- `scale_pos_weight=5.75` pour XGBoost (≈ 20482 / 3560)
-- Le MLP avec `early_stopping` évite l'overfitting sur la classe majoritaire
+Le dataset contient 85 % de non-pannes et 15 % de pannes. Sans correction, les modèles ignoreraient les pannes pour maximiser l'accuracy. Les solutions appliquées : `class_weight='balanced'` pour la régression logistique et le Random Forest, `scale_pos_weight=5.75` pour XGBoost (ratio 20 482 / 3 560), et `early_stopping` pour le MLP afin d'éviter le surapprentissage sur la classe majoritaire.
 
 ---
 
@@ -154,15 +150,15 @@ Le dataset contient 85% de non-pannes et 15% de pannes. Sans correction, les mod
 
 Contient toutes les fonctions d'évaluation :
 
-- `evaluate_model()` → calcule Accuracy, Precision, Recall, F1, ROC-AUC
-- `compare_models()` → tableau comparatif
-- `plot_confusion_matrix()` → matrice de confusion
-- `plot_roc_curves()` → courbes ROC multi-modèles
-- `plot_metrics_comparison()` → graphique à barres groupées
-- `plot_feature_importance()` → importance native ou permutation importance
-- `compute_shap()` → valeurs SHAP (TreeExplainer ou KernelExplainer)
-- `plot_shap_summary()` → graphique SHAP beeswarm
-- `save_model()` / `load_model()` → sérialisation joblib
+- `evaluate_model()` : calcule Accuracy, Precision, Recall, F1, ROC-AUC
+- `compare_models()` : tableau comparatif de tous les modèles
+- `plot_confusion_matrix()` : matrice de confusion
+- `plot_roc_curves()` : courbes ROC superposées
+- `plot_metrics_comparison()` : graphique à barres groupées
+- `plot_feature_importance()` : importance native ou par permutation
+- `compute_shap()` : valeurs SHAP via TreeExplainer ou KernelExplainer
+- `plot_shap_summary()` : graphique SHAP beeswarm
+- `save_model()` / `load_model()` : sérialisation joblib
 
 ---
 
@@ -184,33 +180,36 @@ Orchestre l'ensemble du pipeline en 6 étapes :
 ### `dashboard/app.py`
 
 Application Streamlit avec 4 onglets :
-- **EDA** — analyse exploratoire
-- **Comparaison des modèles** — performances et visualisations
-- **Prédiction en temps réel** — saisie des capteurs → score de risque
-- **Interprétabilité** — Feature importance et SHAP
+
+- EDA : analyse exploratoire des données
+- Comparaison des modèles : performances et visualisations
+- Prédiction en temps réel : saisie des capteurs et score de risque
+- Interprétabilité : feature importance et SHAP
 
 ---
 
 ## 5. Lancer le pipeline d'entraînement
 
-### Depuis la racine du projet :
+Depuis la racine du projet :
 
 ```bash
 python main.py
 ```
 
-### Durée estimée :
-| Étape | Durée approximative |
-|---|---|
-| Logistic Regression | < 5 secondes |
-| Random Forest | 30–60 secondes |
-| XGBoost | 20–40 secondes |
-| MLP (Deep Learning) | 1–3 minutes |
-| Cross-validation (5-fold) | 2–5 minutes |
-| SHAP | 1–3 minutes |
-| **Total** | **~5–10 minutes** |
+Durées approximatives par étape :
 
-### Sortie attendue :
+| Étape | Durée |
+|---|---|
+| Logistic Regression | moins de 5 secondes |
+| Random Forest | 30 à 60 secondes |
+| XGBoost | 20 à 40 secondes |
+| MLP (Deep Learning) | 1 à 3 minutes |
+| Cross-validation 5-fold | 2 à 5 minutes |
+| SHAP | 1 à 3 minutes |
+| Total | environ 5 à 10 minutes |
+
+Sortie attendue en console :
+
 ```
 =================================================================
   MAINTENANCE PRÉDICTIVE — PIPELINE ML/DL
@@ -241,14 +240,14 @@ Pipeline terminé avec succès!
 
 ## 6. Lancer le dashboard
 
-**Important :** utiliser `streamlit run` et non `python`.
+Utiliser `streamlit run` et non `python` directement.
 
-### Depuis la racine du projet :
+Depuis la racine du projet :
 ```bash
 streamlit run dashboard/app.py
 ```
 
-### Depuis le dossier dashboard :
+Depuis le dossier dashboard :
 ```bash
 cd dashboard
 streamlit run app.py
@@ -256,70 +255,74 @@ streamlit run app.py
 
 Le navigateur s'ouvre automatiquement sur `http://localhost:8501`.
 
-> **Prérequis :** `main.py` doit avoir été exécuté au préalable pour générer les modèles et figures.
+Le pipeline `main.py` doit avoir été exécuté au préalable pour que les modèles et les figures soient disponibles.
 
 ---
 
 ## 7. Comprendre les résultats
 
-### Métriques utilisées
+### Pourquoi l'accuracy seule ne suffit pas
 
-Pourquoi ne pas se fier uniquement à l'**Accuracy** ?
-Le dataset est déséquilibré (85% non-pannes). Un modèle qui prédit "jamais de panne" aurait 85% d'accuracy mais serait complètement inutile.
+Le dataset est déséquilibré (85 % de non-pannes). Un modèle qui prédirait systématiquement "pas de panne" obtiendrait 85 % d'accuracy sans jamais détecter une seule panne réelle. C'est pour cela que le Recall a été choisi comme métrique principale.
 
 | Métrique | Formule | Ce qu'elle mesure |
 |---|---|---|
-| **Recall** | TP / (TP + FN) | Capacité à détecter les vraies pannes → prioritaire |
-| **Precision** | TP / (TP + FP) | Part des alertes réellement justifiées |
-| **F1-Score** | 2 × (P × R) / (P + R) | Compromis Precision/Recall |
-| **ROC-AUC** | Aire sous la courbe ROC | Performance globale indépendante du seuil |
+| Recall | TP / (TP + FN) | Proportion des pannes réelles détectées |
+| Precision | TP / (TP + FP) | Proportion des alertes réellement justifiées |
+| F1-Score | 2 × (P × R) / (P + R) | Compromis entre Precision et Recall |
+| ROC-AUC | Aire sous la courbe ROC | Performance globale, indépendante du seuil |
 
-**Dans un contexte industriel, le Recall est prioritaire :**
-Un faux négatif (panne non détectée) coûte beaucoup plus cher qu'une fausse alerte.
+Dans un contexte industriel, un faux négatif (panne non détectée) coûte bien plus cher qu'une fausse alerte. Le Recall est donc prioritaire sur la Precision.
 
 ### Résultats obtenus
 
 | Modèle | Accuracy | Precision | Recall | F1 | ROC-AUC |
 |---|---|---|---|---|---|
-| Logistic Regression | 0.910 | 0.641 | **0.895** | 0.747 | 0.959 |
+| Logistic Regression | 0.910 | 0.641 | 0.895 | 0.747 | 0.959 |
 | Random Forest | 0.965 | 0.859 | 0.916 | 0.887 | 0.993 |
-| **XGBoost** ✔ | **0.968** | 0.847 | **0.955** | **0.898** | **0.996** |
+| XGBoost ✔ | 0.968 | 0.847 | 0.955 | 0.898 | 0.996 |
 | MLP (Deep Learning) | 0.955 | 0.847 | 0.853 | 0.850 | 0.984 |
 
 ### Cross-validation XGBoost
+
 ```
 CV F1 (5-fold) : 0.9026 ± 0.0099
 ```
-L'écart-type faible (0.01) confirme que le modèle est stable et généralise bien.
+
+Un écart-type de 0.01 entre les cinq folds confirme que le modèle est stable et généralise bien sur des données qu'il n'a pas vues pendant l'entraînement.
 
 ---
 
 ## 8. Description du dashboard
 
 ### Onglet 1 — Analyse EDA
-- Distribution de la variable cible (déséquilibre)
-- Répartition par type de machine (pie chart)
-- Distribution de chaque capteur selon le statut (panneau/normal) — sélectionnable
+
+- Distribution de la variable cible et visualisation du déséquilibre
+- Répartition par type de machine
+- Distribution de chaque capteur selon le statut (panne / pas de panne), sélectionnable
 - Matrice de corrélation entre toutes les variables
-- Bilan des valeurs manquantes
+- Bilan des valeurs manquantes par colonne
 
 ### Onglet 2 — Comparaison des modèles
+
 - Tableau des performances avec mise en évidence du meilleur score par métrique
-- Graphique à barres groupées (toutes métriques × tous modèles)
+- Graphique à barres groupées (toutes métriques, tous modèles)
 - Courbes ROC superposées
-- 4 matrices de confusion côte à côte
-- Texte d'analyse et justification du modèle retenu
+- Quatre matrices de confusion côte à côte
+- Justification du modèle retenu
 
 ### Onglet 3 — Prédiction en temps réel
+
 1. Sélectionner le type de machine et le mode de fonctionnement
-2. Ajuster les sliders des capteurs (vibration, température, RPM…)
+2. Ajuster les sliders des capteurs (vibration, température, RPM...)
 3. Choisir le modèle à utiliser
-4. Cliquer sur **Prédire**
-5. Obtenir : niveau de risque coloré (vert / orange / rouge), probabilité de panne, jauge visuelle
+4. Cliquer sur Prédire
+5. Obtenir le niveau de risque coloré (vert / orange / rouge), la probabilité de panne et une jauge visuelle
 
 ### Onglet 4 — Interprétabilité
-- **Feature Importance** : quelles variables influencent le plus le modèle (vision globale)
-- **SHAP Summary Plot** : impact de chaque variable sur chaque prédiction individuelle
+
+- Feature Importance : quelles variables influencent le plus le modèle, en vision globale
+- SHAP Summary Plot : impact de chaque variable sur chaque prédiction individuelle
 - Tableau d'interprétation métier des variables les plus importantes
 
 ---
@@ -331,10 +334,10 @@ L'écart-type faible (0.01) confirme que le modèle est stable et généralise b
 | `ModuleNotFoundError: No module named 'xgboost'` | `pip install xgboost` |
 | `ModuleNotFoundError: No module named 'shap'` | `pip install shap` |
 | `FileNotFoundError: predictive_maintenance_v3.csv` | Placer le CSV à la racine du projet |
-| Dashboard : "Aucun modèle trouvé" | Lancer `python main.py` d'abord |
+| Dashboard affiche "Aucun modèle trouvé" | Lancer `python main.py` d'abord |
 | `streamlit: command not found` | `pip install streamlit` puis réessayer |
-| Lancement avec `python app.py` au lieu de `streamlit run app.py` | Utiliser `streamlit run dashboard/app.py` depuis la racine |
-| Erreur d'encodage sur Windows | Le terminal PowerShell/CMD peut afficher des caractères incorrects — c'est cosmétique, le pipeline s'exécute correctement |
+| Lancement avec `python app.py` au lieu de `streamlit run` | Utiliser `streamlit run dashboard/app.py` depuis la racine |
+| Caractères incorrects dans le terminal Windows | Comportement cosmétique de PowerShell/CMD, le pipeline s'exécute correctement |
 
 ---
 
