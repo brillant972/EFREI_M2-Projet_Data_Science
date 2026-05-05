@@ -122,6 +122,7 @@ def build_rapport_pdf():
         "--disable-web-security",
         f"--print-to-pdf={pdf_path}",
         "--print-to-pdf-no-header",
+        "--no-pdf-header-footer",
         str(html_tmp)
     ], capture_output=True, timeout=90)
 

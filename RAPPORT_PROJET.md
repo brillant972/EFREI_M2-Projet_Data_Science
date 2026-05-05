@@ -1,26 +1,15 @@
-# Rapport de Projet
-
----
-
-**EFREI Paris — Mastère Data Engineering et Intelligence Artificielle**
-
-**Promotion 2025-2026**
-
----
+![](efrei_logo.png)
 
 # Système Intelligent Multi-Modèles pour la Maintenance Prédictive Industrielle
 
----
+EFREI Paris — Mastère Data Engineering et Intelligence Artificielle — Promotion 2025-2026
 
 | | |
 |---|---|
-| **Binôme** | Khalil DJAHEL / Bryan BONTRAIN |
-| **Formatrice** | Sarah MALAEB |
-| **Tuteur / tutrice** | À compléter |
-| **Année scolaire** | 2025-2026 |
-| **Date du rapport** | Mai 2026 |
-
----
+| Binôme | Khalil DJAHEL / Bryan BONTRAIN |
+| Formatrice | Sarah MALAEB |
+| Année scolaire | 2025-2026 |
+| Date du rapport | Mai 2026 |
 
 *Projet certifiant RNCP36739 Expert en ingénierie de données*
 
@@ -32,21 +21,21 @@
 
 Ce projet répond à un problème métier réel : la maintenance corrective industrielle génère des arrêts de production non planifiés, des coûts d'urgence élevés et des risques opérateurs. L'objectif est de construire un système prédictif capable d'anticiper les pannes 24 heures à l'avance à partir de données de capteurs industriels.
 
-**Contexte d'application :** environnements industriels équipés de machines CNC, pompes, compresseurs et bras robotiques instrumentés (vibrations, température, pression, RPM).
+Contexte d'application : environnements industriels équipés de machines CNC, pompes, compresseurs et bras robotiques instrumentés (vibrations, température, pression, RPM).
 
-**Dataset :** Kaggle — Industrial Machine Predictive Maintenance Dataset — 24 042 observations, 9 features retenues, variable cible binaire `failure_within_24h`.
+Dataset : Kaggle — Industrial Machine Predictive Maintenance Dataset — 24 042 observations, 9 features retenues, variable cible binaire `failure_within_24h`.
 
-**Tâche prédictive :** classification binaire supervisée. Le déséquilibre des classes (85 % / 15 %) est géré nativement par les modèles.
+Tâche prédictive : classification binaire supervisée. Le déséquilibre des classes (85 % / 15 %) est géré nativement par les modèles.
 
-**Modèles développés :** 4 algorithmes comparés — Logistic Regression (baseline), Random Forest (bagging), XGBoost (boosting), MLP Deep Learning (réseau de neurones).
+Modèles développés : 4 algorithmes comparés — Logistic Regression (baseline), Random Forest (bagging), XGBoost (boosting), MLP Deep Learning (réseau de neurones).
 
-**Résultats :** XGBoost est retenu avec F1 = **0.898**, Recall = **0.955** et ROC-AUC = **0.996**. La cross-validation 5-fold confirme la stabilité (F1 = 0.9026 ± 0.0099).
+Résultats : XGBoost est retenu avec F1 = **0.898**, Recall = **0.955** et ROC-AUC = **0.996**. La cross-validation 5-fold confirme la stabilité (F1 = 0.9026 ± 0.0099).
 
-**Outil final :** dashboard Streamlit opérationnel en 4 onglets (EDA, comparaison des modèles, prédiction en temps réel, interprétabilité SHAP). La prédiction utilise un pipeline sklearn sérialisé avec joblib.
+Outil final : dashboard Streamlit opérationnel en 4 onglets (EDA, comparaison des modèles, prédiction en temps réel, interprétabilité SHAP). La prédiction utilise un pipeline sklearn sérialisé avec joblib.
 
-**Technologies principales :** Python, Pandas, scikit-learn, XGBoost, Keras/TensorFlow, SHAP, Streamlit, Matplotlib, Seaborn.
+Technologies principales : Python, Pandas, scikit-learn, XGBoost, Keras/TensorFlow, SHAP, Streamlit, Matplotlib, Seaborn.
 
-**Valeur ajoutée :** passage d'un dataset brut à un outil décisionnel opérationnel permettant de détecter 19 pannes sur 20 avant leur survenue, avec explicabilité des alertes pour un utilisateur non technique.
+Valeur ajoutée : passage d'un dataset brut à un outil décisionnel opérationnel permettant de détecter 19 pannes sur 20 avant leur survenue, avec explicabilité des alertes pour un utilisateur non technique.
 
 ---
 
@@ -148,18 +137,7 @@ Avec un Recall de 95.5 %, le système permet de détecter 19 pannes sur 20 avant
 
 Le projet a été conduit selon une approche **Agile / Kanban** avec des sprints hebdomadaires et une revue des livrables en binôme. Cette méthode permet d'adapter les priorités en cours de projet (par exemple, consacrer plus de temps à la gestion du déséquilibre des classes lorsque les premiers résultats de la régression logistique se sont révélés insuffisants).
 
-### 3.2 Planification et jalons
-
-| Sprint | Période | Contenu | Livrable |
-|---|---|---|---|
-| Sprint 1 | Semaine 1 | Compréhension du sujet, exploration du dataset, premières visualisations | Notebook EDA |
-| Sprint 2 | Semaine 2 | Preprocessing, pipeline anti-leakage, split train/test | Pipeline sklearn |
-| Sprint 3 | Semaine 3 | Modélisation (LR, RF, XGBoost, MLP), évaluation initiale | 4 modèles entraînés |
-| Sprint 4 | Semaine 4 | Évaluation comparative, SHAP, validation croisée | Rapport intermédiaire |
-| Sprint 5 | Semaine 5 | Dashboard Streamlit, sérialisation joblib | Application opérationnelle |
-| Sprint 6 | Semaine 6 | Rédaction rapport, préparation soutenance | Rapport final + présentation |
-
-### 3.3 Répartition des tâches
+### 3.2 Répartition des tâches
 
 | Tâche | Responsable |
 |---|---|
@@ -172,9 +150,9 @@ Le projet a été conduit selon une approche **Agile / Kanban** avec des sprints
 | Rédaction du rapport | Binôme |
 | Préparation soutenance | Binôme |
 
-**Outils de collaboration :** GitHub (versionnage du code), Jupyter Notebooks (exploration), Google Drive (livrables partagés).
+Outils de collaboration : GitHub (versionnage du code), Jupyter Notebooks (exploration), Google Drive (livrables partagés).
 
-### 3.4 Risques rencontrés et solutions
+### 3.3 Risques rencontrés et solutions
 
 | Risque | Impact | Solution mise en œuvre |
 |---|---|---|
@@ -187,8 +165,8 @@ Le projet a été conduit selon une approche **Agile / Kanban** avec des sprints
 
 ## 4. Référentiel de données
 
-**Source :** Kaggle — Industrial Machine Predictive Maintenance Dataset
-**Fichier :** `predictive_maintenance_v3.csv`
+Source : Kaggle — Industrial Machine Predictive Maintenance Dataset
+Fichier : `predictive_maintenance_v3.csv`
 
 ### 4.1 Caractéristiques générales
 
@@ -433,51 +411,46 @@ Le schéma ci-dessous représente la chaîne de traitement complète, de l'inges
 
 ### 8.1 Logistic Regression - Modèle baseline
 
-**Principe interne :** calcule une combinaison linéaire pondérée des features (`z = w₁×vibration + w₂×température + ...`), puis applique la fonction sigmoïde σ(z) = 1/(1+e^(-z)) pour obtenir une probabilité entre 0 et 1. Le modèle apprend les coefficients w pendant l'entraînement.
+Principe : calcule une combinaison linéaire pondérée des features (`z = w₁×vibration + w₂×température + ...`), puis applique la fonction sigmoïde σ(z) = 1/(1+e^(-z)) pour obtenir une probabilité entre 0 et 1.
 
-**Paramètres :** `C=1.0`, `solver='lbfgs'`, `max_iter=1000`, `class_weight='balanced'`
+Paramètres : `C=1.0`, `solver='lbfgs'`, `max_iter=1000`, `class_weight='balanced'`
 
-**Forces :** très interprétable (coefficient positif = la feature augmente le risque), rapide, robuste
-
-**Limites :** modèle linéaire → ne capture pas "si vibration ET température sont simultanément élevées" (interactions non linéaires)
-
-**Rôle :** baseline de référence. Si ce modèle était le meilleur, le problème serait linéairement séparable et les modèles complexes seraient inutiles.
+Forces : très interprétable (coefficient positif = la feature augmente le risque), rapide, robuste.
+Limites : modèle linéaire → ne capture pas les interactions non linéaires entre capteurs.
+Rôle : baseline de référence. Si ce modèle était le meilleur, le problème serait linéairement séparable et les modèles complexes seraient inutiles.
 
 ### 8.2 Random Forest - Modèle ensembliste (Bagging)
 
-**Principe interne :** construit 200 arbres de décision **indépendants**, chacun entraîné sur un sous-échantillon aléatoire des données (bagging). Chaque arbre pose des questions binaires (`vibration_rms > 2.3 ?`) jusqu'à une décision finale. La prédiction finale = **moyenne des 200 probabilités** (vote).
+Principe : construit 200 arbres de décision indépendants, chacun entraîné sur un sous-échantillon aléatoire des données (bagging). La prédiction finale est la moyenne des 200 probabilités.
 
 La double randomisation (sous-ensemble d'observations + sous-ensemble de features à chaque nœud) fait que les arbres font des erreurs différentes — en moyennant, les erreurs s'annulent.
 
-**Paramètres :** `n_estimators=200`, `max_depth=15`, `class_weight='balanced'`
+Paramètres : `n_estimators=200`, `max_depth=15`, `class_weight='balanced'`
 
-**Forces :** capture les non-linéarités, robuste aux outliers, feature importance native
-
-**Limites :** modèle volumineux (21 MB), moins performant que le boosting sur ce dataset
+Forces : capture les non-linéarités, robuste aux outliers, feature importance native.
+Limites : modèle volumineux (21 MB), moins performant que le boosting sur ce dataset.
 
 ### 8.3 XGBoost — Gradient Boosting
 
-**Principe interne :** construit les arbres **séquentiellement** — chaque arbre corrige les erreurs du précédent. L'algorithme utilise le **gradient de la fonction de perte** pour savoir où concentrer l'effort de correction. Avec 200 arbres et un `learning_rate=0.1`, chaque arbre corrige 10% des erreurs restantes de manière contrôlée.
+Principe : construit les arbres séquentiellement — chaque arbre corrige les erreurs du précédent. L'algorithme utilise le gradient de la fonction de perte pour savoir où concentrer l'effort de correction. Avec 200 arbres et un `learning_rate=0.1`, chaque arbre corrige 10 % des erreurs restantes de manière contrôlée.
 
-Différence clé avec Random Forest : les arbres ne sont **pas indépendants**, ils se corrigent mutuellement.
+Différence clé avec Random Forest : les arbres ne sont pas indépendants, ils se corrigent mutuellement.
 
-**Paramètres :** `n_estimators=200`, `max_depth=6`, `learning_rate=0.1`, `scale_pos_weight=5.75`
+Paramètres : `n_estimators=200`, `max_depth=6`, `learning_rate=0.1`, `scale_pos_weight=5.75`
 
-**Forces :** meilleure performance sur données tabulaires, régularisation L1/L2 intégrée, déploiement léger (~600 KB)
-
-**Limites :** hyperparamétrage plus complexe
+Forces : meilleure performance sur données tabulaires, régularisation L1/L2 intégrée, déploiement léger (~600 KB).
+Limites : hyperparamétrage plus complexe.
 
 ### 8.4 MLP — Deep Learning (Réseau de neurones multicouche)
 
-**Principe interne :** réseau de neurones artificiels avec 3 couches cachées. Chaque neurone calcule `z = Σ(wᵢ×xᵢ) + b` puis applique ReLU : `f(z) = max(0, z)`. L'entraînement utilise la rétropropagation (backpropagation) à chaque exemple, l'erreur remonte couche par couche pour ajuster tous les poids.
+Principe : réseau de neurones artificiels avec 3 couches cachées. Chaque neurone calcule `z = Σ(wᵢ×xᵢ) + b` puis applique ReLU : `f(z) = max(0, z)`. L'entraînement utilise la rétropropagation (backpropagation) pour ajuster tous les poids.
 
-**Architecture :** Input (11 features) → 128 neurones → 64 → 32 → Output (sigmoïde → probabilité)
+Architecture : Input (11 features) → 128 neurones → 64 → 32 → Output (sigmoïde → probabilité)
 
-**Paramètres :** `hidden_layer_sizes=(128, 64, 32)`, `activation='relu'`, `alpha=1e-4`, `early_stopping=True`
+Paramètres : `hidden_layer_sizes=(128, 64, 32)`, `activation='relu'`, `alpha=1e-4`, `early_stopping=True`
 
-**Forces :** capture des interactions complexes sans feature engineering manuel
-
-**Limites :** boîte noire, sensible au manque de données, sensible à l'initialisation aléatoire
+Forces : capture des interactions complexes sans feature engineering manuel.
+Limites : boîte noire, sensible au manque de données et à l'initialisation aléatoire.
 
 ---
 
@@ -500,17 +473,13 @@ Différence clé avec Random Forest : les arbres ne sont **pas indépendants**, 
 
 ### 9.3 Analyse des résultats
 
-**Logistic Regression :**
-La Precision faible (0.641) indique de nombreuses fausses alertes. La limitation linéaire du modèle ne permet pas de capturer les interactions complexes entre capteurs. Son rôle est confirmé : tous les autres modèles le surpassent significativement (+0.14 F1 pour Random Forest).
+Logistic Regression : la Precision faible (0.641) indique de nombreuses fausses alertes. La limitation linéaire du modèle ne lui permet pas de capturer les interactions complexes entre capteurs. Son rôle est confirmé : tous les autres modèles le surpassent significativement (+0.14 F1 pour Random Forest).
 
-**Random Forest :**
-Excellentes performances (F1=0.887, ROC-AUC=0.993). Le gain de +0.14 F1 par rapport à la régression logistique confirme la présence de relations non linéaires dans les données. Cependant, XGBoost le surpasse sur tous les critères, et son volume (21 MB vs 600 KB) pénalise le déploiement.
+Random Forest : excellentes performances (F1=0.887, ROC-AUC=0.993). Le gain de +0.14 F1 par rapport à la régression logistique confirme la présence de relations non linéaires dans les données. Cependant, XGBoost le surpasse sur tous les critères, et son volume (21 MB vs 600 KB) pénalise le déploiement.
 
-**XGBoost (modèle retenu) :**
-Meilleur compromis toutes métriques confondues. Le **Recall de 0.955** signifie que 95.5% des pannes réelles sont détectées — soit 19 pannes sur 20. Le ROC-AUC de 0.996 indique une quasi-parfaite capacité à distinguer les deux classes.
+XGBoost (modèle retenu) : meilleur compromis toutes métriques confondues. Le Recall de **0.955** signifie que 95.5 % des pannes réelles sont détectées — soit 19 pannes sur 20. Le ROC-AUC de 0.996 indique une quasi-parfaite capacité à distinguer les deux classes.
 
-**MLP (Deep Learning) :**
-F1=0.850, inférieur à XGBoost. Avec 24 000 observations et 9 features structurées, les arbres boostés ont l'avantage. Le Deep Learning excelle sur des données non structurées (images, texte) ou des séries temporelles longues.
+MLP (Deep Learning) : F1=0.850, inférieur à XGBoost. Avec 24 000 observations et 9 features structurées, les arbres boostés ont l'avantage. Le Deep Learning excelle sur des données non structurées (images, texte) ou des séries temporelles longues.
 
 ### 9.4 Matrices de confusion - comparaison des 4 modèles
 
