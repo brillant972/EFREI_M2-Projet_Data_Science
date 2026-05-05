@@ -72,11 +72,14 @@ def build_rapport_pdf():
     h3 { font-size: 12.5pt; color: #2c6e9e; margin-top: 18px; page-break-after: avoid; }
     p { margin: 0.5em 0 0.8em 0; }
     img {
-      display: block; max-width: 100%; max-height: 480px; height: auto;
+      display: block; max-width: 90%; max-height: 420px; height: auto;
       margin: 16px auto; border-radius: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,.12); page-break-inside: avoid;
-      page-break-before: avoid;
+      box-shadow: 0 2px 8px rgba(0,0,0,.12);
+      break-inside: avoid; page-break-inside: avoid;
     }
+    p:has(img) { break-inside: avoid; page-break-inside: avoid; }
+    h3 { page-break-after: avoid; }
+    h2 { page-break-after: avoid; }
     table {
       width: 100%; border-collapse: collapse;
       font-size: 10pt; margin: 14px 0; page-break-inside: avoid;
