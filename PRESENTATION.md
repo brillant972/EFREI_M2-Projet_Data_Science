@@ -67,7 +67,7 @@ style: |
     color: #cdd9e5;
     padding: 14px 18px;
     border-radius: 6px;
-    font-size: 16px;
+    font-size: 15px;
     line-height: 1.55;
   }
   pre code { background: none; color: inherit; font-size: inherit; }
@@ -91,7 +91,7 @@ style: |
   section.cover h2 { color: #f0c060; border: none; font-size: 22px; }
   section.cover p  { color: #cce0f5; font-size: 19px; }
   section.cover footer { color: #90b8d8; }
-  img { max-width: 100%; height: auto; display: block; margin: 8px auto; }
+  img { max-width: 100%; max-height: 380px; height: auto; display: block; margin: 8px auto; }
 ---
 
 <!-- _class: cover -->
@@ -99,15 +99,15 @@ style: |
 # Système Intelligent Multi-Modèles
 # pour la Maintenance Prédictive Industrielle
 
-## Projet M2 Data Science — EFREI 2025-26
+## Soutenance — M2 Data Engineering et IA — EFREI 2025-26
 
 *Khalil DJAHEL / Bryan BONTRAIN*
 
-*RNCP36739 — Bloc 4*
+*RNCP36739 — Bloc 4 — Formatrice : Sarah MALAEB*
 
 ---
 
-## Contexte et problème
+## Contexte et problème métier
 
 | Maintenance corrective | Maintenance prédictive |
 |---|---|
@@ -115,90 +115,186 @@ style: |
 | Arrêt non planifié, coûts élevés | Coût maîtrisé, zéro surprise |
 | Risque opérateur | Sécurité préservée |
 
-**Notre approche**
+> **"Un système intelligent multi-modèles permettant de détecter une panne industrielle 24 heures à l'avance, pour aider les responsables maintenance à planifier des interventions préventives à moindre coût."**
 
-Classification binaire supervisée sur la variable `failure_within_24h`.
-
-Les capteurs industriels (vibration, température, pression, RPM) génèrent en continu des signaux porteurs de patterns annonciateurs de panne. L'objectif est de les exploiter pour détecter une défaillance 24 heures à l'avance.
+**Tâche :** Classification binaire supervisée — variable cible : `failure_within_24h`
 
 ---
 
-## Dataset et pipeline
+## Analyse du besoin utilisateur
 
-**24 042 observations — 9 features retenues — 4 types de machines**
+**Utilisateur cible :** responsable maintenance / ingénieur opérationnel (profil non technique)
 
-Trois colonnes supprimées pour éviter le **data leakage** :
+| Scénario d'usage | Besoin | Réponse de la solution |
+|---|---|---|
+| Surveillance quotidienne | Quelles machines surveiller en priorité ? | Score de risque coloré par machine |
+| Alerte imminente | Cette machine doit-elle être arrêtée ? | Probabilité + recommandation 24h |
+| Bilan de performance | Peut-on faire confiance au système ? | Tableau comparatif des modèles |
 
-| Colonne supprimée | Raison |
+**Contraintes :** interface non technique · résultat lisible en 5 secondes · prédiction en temps réel
+
+**Valeur ajoutée :** détecter 19 pannes sur 20 avant leur survenue → réduire les arrêts non planifiés et leurs coûts d'urgence
+
+---
+
+## Méthodologie et organisation du projet
+
+**Approche Agile / Kanban** — sprints hebdomadaires, revue des livrables en binôme
+
+| Sprint | Contenu | Outils |
+|---|---|---|
+| 1 | Compréhension du sujet, EDA | Jupyter, Pandas, Matplotlib |
+| 2 | Preprocessing, pipeline anti-leakage | sklearn, ColumnTransformer |
+| 3 | Modélisation (4 algorithmes ML/DL) | XGBoost, sklearn, Keras/MLP |
+| 4 | Évaluation, SHAP, interprétabilité | SHAP, Matplotlib, cross-validation |
+| 5 | Dashboard Streamlit, soutenance | Streamlit, Marp |
+
+**Répartition :** Khalil (pipeline, modèles ML/DL, SHAP) · Bryan (EDA, dashboard, rapport)
+
+**Risques gérés :** déséquilibre 85/15 · data leakage · overfitting MLP · performance Deep Learning limitée
+
+---
+
+## Référentiel de données
+
+**Source :** Kaggle — Industrial Machine Predictive Maintenance Dataset
+
+| Attribut | Valeur |
 |---|---|
-| `failure_type` | Révèle directement qu'une panne est en cours |
-| `rul_hours` | Encode implicitement la cible (corrélation -0.25) |
-| `estimated_repair_cost` | Calculé après la panne, indisponible en temps réel |
+| Observations | 24 042 |
+| Variables retenues | 9 features + 1 cible |
+| Types de machines | CNC, Pump, Compressor, Robotic Arm |
+| Variable cible | `failure_within_24h` (0/1) |
+| Déséquilibre | 85.2 % pas de panne · 14.8 % panne imminente |
 
-**Pipeline sklearn (anti-leakage)**
+**Features capteurs :** `vibration_rms` · `temperature_motor` · `current_phase_avg` · `pressure_level` · `rpm` · `hours_since_maintenance` · `ambient_temp` · `machine_type` · `operating_mode`
+
+**3 colonnes supprimées (data leakage) :** `failure_type` · `rul_hours` · `estimated_repair_cost`
+
+![h:160px](saved_models/figures/eda_target_distribution.png)
+
+---
+
+## EDA — Exploration et visualisation
+
+![h:300px](saved_models/figures/eda_sensor_distributions.png)
+
+Les machines en **pré-panne** (orange) présentent des valeurs systématiquement plus élevées pour `vibration_rms`, `temperature_motor` et `hours_since_maintenance` — cohérent avec la physique industrielle (usure, surchauffe, absence de maintenance).
+
+---
+
+## Pipeline Data Science anti-leakage
 
 ```
-Split stratifié 80/20   →   ColumnTransformer ajusté sur TRAIN uniquement
-  Numériques (7)  :  Median Imputer  +  StandardScaler
-  Catégorielles (2):  Mode Imputer   +  OneHotEncoder
+Données brutes (24 042 lignes · 15 colonnes)
+  ↓  Suppression leakage + identifiants
+  ↓  Split stratifié 80/20  →  Train: 19 233 | Test: 4 809
+  ↓
+  ColumnTransformer  [ajusté sur TRAIN uniquement]
+    ├─ Numériques (7)    :  Median Imputer  →  StandardScaler
+    └─ Catégorielles (2) :  Mode Imputer   →  OneHotEncoder
+  ↓
+  Entraînement  →  4 modèles (LR · RF · XGBoost · MLP)
+  ↓
+  Évaluation comparative (Recall · F1 · ROC-AUC)
+  ↓
+  Modèle retenu : XGBoost  →  SHAP  →  Dashboard Streamlit
 ```
 
-Toutes les statistiques de preprocessing sont calculées sur le train set, puis appliquées sur le test set sans contamination.
+Toutes les statistiques de preprocessing calculées **uniquement sur le train set**, jamais sur le test.
 
 ---
 
 ## Les 4 modèles
 
-| Modèle | Principe | Gestion du déséquilibre (85/15) |
+| Modèle | Principe | Gestion déséquilibre (85/15) |
 |---|---|---|
 | Logistic Regression | Combinaison linéaire + sigmoïde — baseline | `class_weight='balanced'` |
 | Random Forest | 200 arbres indépendants, vote (bagging) | `class_weight='balanced'` |
-| XGBoost | 200 arbres séquentiels, chacun corrige le précédent (boosting) | `scale_pos_weight=5.75` |
+| XGBoost | 200 arbres séquentiels, correction progressive (boosting) | `scale_pos_weight=5.75` |
 | MLP Deep Learning | 128 → 64 → 32 neurones, ReLU, backpropagation | `early_stopping=True` |
 
-**Métriques retenues**
-
-Le Recall est prioritaire : un faux négatif (panne non détectée) est le cas le plus coûteux industriellement. Le F1-Score équilibre Recall et Precision. L'Accuracy seule est trompeuse sur un dataset déséquilibré.
+**Métriques prioritaires :** Recall (FN = panne ratée → cas le plus coûteux industriellement) · F1-Score · ROC-AUC
 
 ---
 
-## Résultats
+## Résultats comparatifs
 
 | Modèle | Recall | F1-Score | ROC-AUC |
 |---|---|---|---|
 | Logistic Regression | 0.895 | 0.747 | 0.959 |
 | Random Forest | 0.916 | 0.887 | 0.993 |
-| **XGBoost** | **0.955** | **0.898** | **0.996** |
+| **XGBoost** ✔ | **0.955** | **0.898** | **0.996** |
 | MLP Deep Learning | 0.853 | 0.850 | 0.984 |
 
-![](saved_models/figures/metrics_comparison.png)
+![h:240px](saved_models/figures/metrics_comparison.png)
 
-Cross-validation 5-fold XGBoost : **F1 = 0.9026 ± 0.0099** — modèle stable, pas d'overfitting.
-
----
-
-## Interprétabilité
-
-![](saved_models/figures/shap_summary.png)
-
-**Top 5 features :** `vibration_rms` — `temperature_motor` — `hours_since_maintenance` — `rpm` — `pressure_level`
-
-SHAP explique chaque prédiction individuelle. Une vibration élevée (valeur rouge, axe positif) augmente la probabilité de panne. Un entretien récent (valeur bleue, axe négatif) la réduit. Les décisions sont physiquement cohérentes et justifiables auprès d'un responsable maintenance.
+Cross-validation 5-fold XGBoost : **F1 = 0.9026 ± 0.0099** — stable, pas d'overfitting
 
 ---
 
-## Dashboard et conclusion
+## Interprétabilité — SHAP
 
-**Dashboard Streamlit** — 4 onglets : EDA, comparaison des modèles, prédiction en temps réel, interprétabilité.
+![h:310px](saved_models/figures/shap_summary.png)
+
+**Top 5 :** `vibration_rms` · `temperature_motor` · `hours_since_maintenance` · `rpm` · `pressure_level`
+
+Rouge = valeur élevée → **augmente le risque de panne** · Bleu = valeur faible → **réduit le risque**
+
+---
+
+## Dashboard décisionnel
+
+**Streamlit** — 4 onglets orientés utilisateur métier
+
+| Onglet | Valeur métier |
+|---|---|
+| EDA | Visualisation des signaux capteurs et corrélations |
+| Modèles | Tableau comparatif, courbes ROC, matrices de confusion |
+| Prédiction | Score de risque coloré + recommandation en temps réel |
+| Interprétabilité | Feature importance + SHAP pour chaque alerte |
+
+**Cas d'usage :** saisir les valeurs capteurs d'une machine → obtenir un score de risque (**ÉLEVÉ / FAIBLE**) avec probabilité et recommandation d'intervention dans les 24h
 
 ```
-streamlit run dashboard/app.py
+streamlit run dashboard/app.py   →   http://localhost:8501
 ```
 
-**Bilan**
+---
 
-XGBoost retenu : F1 = 0.898 — Recall = 0.955 — ROC-AUC = 0.996
+## Limites et pistes d'amélioration
 
-Avec un Recall de 95.5 %, le système détecte 19 pannes sur 20 avant leur survenue, permettant de planifier des interventions préventives à moindre coût.
+**Limites actuelles**
 
-**Perspectives :** features temporelles (rolling mean 1 h / 6 h), ajustement du seuil de décision, monitoring de dérive, API REST FastAPI.
+- **Dataset simulé** → performances probablement inférieures sur données industrielles réelles (bruit capteurs, variabilité inter-machines)
+- **Absence de features temporelles** → chaque mesure est traitée indépendamment (pas de tendance d'évolution)
+- **Seuil de décision fixe à 0.5** → devrait être ajusté selon le ratio coût panne / coût intervention
+- **MLP limité** → Deep Learning efficace à partir de 100k+ observations ou séries temporelles longues
+
+**Pistes d'amélioration**
+
+- Rolling features (moyenne glissante 1h / 6h) pour capturer les tendances de dégradation
+- Ajustement du seuil de décision selon le coût métier réel
+- Monitoring de dérive des capteurs (data drift) en production
+- Réentraînement périodique + déploiement cloud
+- API REST FastAPI pour intégration SCADA/ERP (optionnel)
+
+---
+
+## Conclusion
+
+**Ce que nous avons réalisé**
+
+Pipeline Data Science complet : EDA → preprocessing anti-leakage → 4 modèles → évaluation comparative → interprétabilité SHAP → dashboard décisionnel
+
+**Modèle retenu — XGBoost**
+
+| Métrique | Valeur | Signification métier |
+|---|---|---|
+| Recall | **0.955** | 19 pannes sur 20 détectées avant survenue |
+| F1-Score | **0.898** | Équilibre précision / détection |
+| ROC-AUC | **0.996** | Quasi-parfaite discrimination des classes |
+
+**Compétences acquises :** EDA · Preprocessing · ML supervisé · Deep Learning · Évaluation rigoureuse · Interprétabilité (SHAP) · Dashboard Streamlit · Gestion de projet Agile
+
+> Passage d'un dataset brut à un outil décisionnel opérationnel, explicable et défendable dans un contexte professionnel.
