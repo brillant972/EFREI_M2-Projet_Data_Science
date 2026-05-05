@@ -132,7 +132,7 @@ Avec un Recall de 95.5 %, le système détecte 19 pannes sur 20 avant qu'elles s
 
 ### 3.1 Approche adoptée
 
-Le projet a été organisé en itérations courtes selon une logique Agile/Kanban. Cette méthode s'est avérée utile en pratique : quand les premiers résultats de la régression logistique ont montré ses limites sur un dataset déséquilibré, il a été possible de réorienter rapidement les efforts vers les modèles ensemblistes sans remettre en cause l'ensemble du planning.
+Le projet a été organisé en itérations courtes selon une logique Agile/Kanban. Cette méthode s'est avérée utile en pratique : quand les premiers résultats de la régression logistique ont montré ses limites sur un dataset déséquilibré, il a été possible de réorienter rapidement les efforts vers les modèles ensemblistes.
 
 ### 3.2 Répartition des tâches
 
@@ -222,7 +222,7 @@ Le dataset est généré synthétiquement. Les performances mesurées pourraient
 
 ![*Figure 1 — Distribution de la variable cible. Le ratio de 5.75 pour 1 illustre un déséquilibre significatif mais réaliste : dans un contexte industriel réel, les pannes sont des événements rares.*](saved_models/figures/eda_target_distribution.png)
 
-Le déséquilibre (85 % / 15 %) est réaliste dans un contexte industriel. Sans traitement adapté, les modèles tendraient à prédire systématiquement "pas de panne" et afficheraient 85 % d'accuracy sans jamais détecter une seule panne réelle, ce qui est parfaitement inutile.
+Le déséquilibre (85 % / 15 %) est réaliste dans notre situation mais sans traitement adapté, les modèles tendraient à prédire systématiquement "pas de panne" et afficheraient 85 % d'accuracy sans jamais détecter une seule panne réelle, ce qui est parfaitement inutile.
 
 ### 5.2 Répartition par type de machine
 
@@ -333,7 +333,6 @@ Le schéma ci-dessous représente la chaîne de traitement complète, du chargem
 ```
 +---------------------------------------------------------------------+
 |                        DONNEES BRUTES                               |
-|          predictive_maintenance_v3.csv  (24 042 lignes)             |
 +---------------------------+-----------------------------------------+
                             |
                     +-------+--------+
@@ -375,16 +374,13 @@ Le schéma ci-dessous représente la chaîne de traitement complète, du chargem
               |  Serialisation joblib         |
               +------+------------------------+
                      |
-         +-----------+------------------+
-         |  INTERPRETABILITE SHAP       |
-         |  Feature Importance          |
-         |  TreeExplainer               |
-         +-----------+------------------+
+         +-----------+----------------------------------+
+         |  INTERPRETABILITE SHAP                       |
+         |  Feature Importance | TreeExplainer          |
+         +-----------+----------------------------------+
                      |
          +-----------+------------------+
          |  DASHBOARD STREAMLIT         |
-         |  EDA / Modeles / Prediction  |
-         |  Interpretabilite            |
          +------------------------------+
 ```
 
@@ -541,7 +537,7 @@ Pour le MLP : `early_stopping=True` interrompt l'entraînement dès que la valid
 
 ### 10.4 Preuve empirique de généralisation
 
-La cross-validation 5-fold sur XGBoost donne F1 = **0.9026 ± 0.0099** sur des données jamais vues pendant l'entraînement. Le score sur le test set isolé est de 0.898, soit un écart de moins de 0.005. Un modèle en overfitting afficherait un écart bien plus important. La faible variance entre les folds (0.0099) confirme que les performances sont reproductibles.
+La cross-validation 5-fold sur XGBoost donne F1 = **0.9026 ± 0.0099** sur des données jamais vues pendant l'entraînement. Le score sur le test set isolé est de 0.898, soit un écart de moins de 0.005. Un modèle en overfitting afficherait un écart bien plus important. La faible variance entre les folds (0.0099) confirme que les performances sont reproductibles et qu ele modèle est fiable.
 
 ---
 
@@ -584,7 +580,7 @@ Utilité opérationnelle : face à un responsable maintenance qui demande pourqu
 
 ### 11.3 Analyse métier des décisions du modèle
 
-Le modèle XGBoost a appris des règles de décision qui correspondent à la physique des machines industrielles. Une vibration RMS élevée combinée à une température moteur élevée constitue le signal le plus fort de panne imminente. Physiquement, ces deux phénomènes coexistent lors de la dégradation des roulements : le frottement augmente, produisant simultanément de la chaleur et des vibrations.
+Le modèle XGBoost a appris des règles de décision qui correspondent à la physique des machines industrielles. Une vibration RMS élevée combinée à une température moteur élevée constitue le signal le plus fort de panne imminente.
 
 Un `hours_since_maintenance` élevé augmente le risque de façon continue, reflétant l'usure cumulative des pièces entre deux interventions. Le mode opératoire `peak` est associé à un risque plus élevé, ce qui est attendu compte tenu du stress mécanique supérieur qu'il génère.
 
@@ -594,7 +590,7 @@ Ces correspondances entre les décisions du modèle et la physique des équipeme
 
 ## 12. Interface utilisateur et dashboard décisionnel
 
-Le dashboard Streamlit a été conçu comme un outil décisionnel autonome, distinct des visualisations d'analyse scientifique de l'EDA. Il cible un responsable maintenance non technique qui a besoin d'une réponse claire, pas d'un graphique de corrélation.
+Le dashboard Streamlit a été conçu comme un outil décisionnel, distinct des visualisations d'analyse scientifique de l'EDA. Il cible un responsable maintenance non technique qui a besoin d'une réponse, pas d'un graphique de corrélation.
 
 ### 12.1 Architecture du dashboard
 
@@ -616,15 +612,13 @@ L'utilisateur saisit les valeurs des capteurs d'une machine suspecte. Le dashboa
 
 Les graphiques de l'EDA (section 5) sont des visualisations d'analyse scientifique : histogrammes, heatmaps, boxplots. Ils ont été produits pour le data scientist qui cherche à comprendre les données avant de modéliser.
 
-Les visualisations du dashboard sont orientées vers la décision : score coloré, jauge de probabilité, liste des facteurs de risque en langage naturel. L'objectif n'est pas d'informer, mais d'aider à agir.
+Les visualisations du dashboard sont orientées vers la décision : score coloré, jauge de probabilité, liste des facteurs de risque en langage naturel.
 
 ### 12.4 Lancement
 
 ```bash
 streamlit run dashboard/app.py
 ```
-
-Le dashboard est accessible à l'adresse `http://localhost:8501`.
 
 ---
 
@@ -660,17 +654,17 @@ Les capteurs sont dans leurs plages habituelles et la machine a été entretenue
 | `machine_type` | Pump | Type à haute sollicitation |
 | `operating_mode` | peak | Mode surcharge |
 
-Résultat obtenu : probabilité de panne entre 85 et 95 %, score ÉLEVÉ (rouge), recommandation d'intervention dans les 24h avec vérification des roulements et du système de refroidissement.
+Résultat obtenu : probabilité de panne entre 85 et 95 %, score ÉLEVÉ (rouge), recommandation d'intervention dans les 24h.
 
 La combinaison vibration élevée, surchauffe, maintenance ancienne et mode peak active simultanément les trois principaux signaux prédicteurs. L'analyse SHAP confirme que `vibration_rms` et `temperature_motor` sont les contributions dominantes à cette prédiction.
 
 ### 13.3 Cohérence et comportement aux cas limites
 
-Les prédictions sont cohérentes avec ce qu'un technicien de maintenance expérimenté attendrait : les variables que SHAP identifie comme déterminantes correspondent aux indicateurs physiques classiques de dégradation.
+Les prédictions sont cohérentes avec ce qu'un technicien de maintenance attendrait : les variables que SHAP identifie comme déterminantes correspondent aux indicateurs physiques classiques de dégradation des machines industrielles en général.
 
-Avec une Precision de 0.847, environ une alerte sur six est une fausse alarme. Dans un contexte industriel, ce taux est acceptable si le coût d'une intervention préventive inutile reste inférieur au coût d'une panne non anticipée.
+Avec une Precision de 0.847, environ une alerte sur six est une fausse alarme. Dans un contexte industriel, ce taux est acceptable si le coût d'une intervention préventive inutile reste inférieur au coût d'une panne non anticipée, ce qui est surement le cas.
 
-Pour les cas ambigus (valeurs modérées sur toutes les variables), le modèle produit une probabilité entre 40 et 60 %, ce qui permet à l'utilisateur de prendre une décision consciente de l'incertitude plutôt que de recevoir une réponse binaire trompeuse.
+Pour les cas ambigus (valeurs modérées sur toutes les variables), le modèle produit une probabilité entre 40 et 60 %, ce qui permet à l'utilisateur de prendre une décision en prenant en compte l'incertitude plutôt que de recevoir une réponse binaire pouvant être trompeuse.
 
 ---
 
@@ -680,19 +674,17 @@ Pour les cas ambigus (valeurs modérées sur toutes les variables), le modèle p
 
 L'intégralité du preprocessing est encapsulée dans des sklearn Pipelines sérialisés avec joblib. Chaque étape (imputation, normalisation, encodage) est reproductible et peut être auditée. Le code source est versionné sur GitHub, ce qui permet de recréer exactement les mêmes résultats à partir des données brutes.
 
-Le dataset étant généré synthétiquement, les distributions des capteurs ont été conçues pour reproduire des patterns industriels réels. Les performances obtenues ne garantissent pas les mêmes résultats sur des données de production, où le bruit et la variabilité inter-machines sont plus importants.
-
 ### 14.2 Risques de biais et limites du modèle
 
 Les quatre types de machines sont représentés équitablement dans le dataset. Toutefois, des équipements d'une nouvelle ligne de production non représentée pendant l'entraînement pourraient produire des prédictions moins fiables.
 
 En production réelle, les capteurs vieillissent et leurs distributions changent progressivement. Un modèle entraîné en 2024 pourrait voir ses performances se dégrader silencieusement sans que personne ne s'en aperçoive, faute de monitoring adapté.
 
-Avec un Recall de 0.955, environ 4.5 % des pannes réelles ne seront pas détectées. Ce risque résiduel doit être communiqué clairement aux utilisateurs pour éviter une confiance aveugle dans le système.
+Avec un Recall de 0.955, environ 4.5 % des pannes réelles ne seront pas détectées.
 
 ### 14.3 Enjeux de responsabilité
 
-Le système est un outil d'aide à la décision, pas un système autonome. Les alertes générées par le modèle doivent être validées par un ingénieur maintenance avant toute décision critique (arrêt de production, remplacement de pièces). Le modèle complète l'expertise humaine, il ne la remplace pas.
+Le système est un outil d'aide à la décision, pas un système autonome. Les alertes générées par le modèle doivent être validées par un ingénieur maintenance avant toute décision critique (arrêt de production, remplacement de pièces). Notre modèle n'est pas infaillible.
 
 ### 14.4 Recommandations pour un déploiement responsable
 
@@ -718,7 +710,7 @@ Des informations contextuelles potentiellement utiles sont absentes du dataset :
 
 ### 15.2 Limites méthodologiques
 
-Le seuil de décision est fixé à 0.5 par défaut. En production, ce seuil devrait être calibré en fonction du ratio coût d'une panne non détectée / coût d'une intervention préventive inutile. Si une panne coûte 10 fois plus qu'une fausse alerte, abaisser le seuil à 0.3 permettrait d'augmenter significativement le Recall.
+Le seuil de décision est fixé à 0.5 selon notre arbitrage. En production, ce seuil devrait être calibré en fonction du ratio coût d'une panne non détectée / coût d'une intervention préventive inutile. Si une panne coûte 10 fois plus qu'une fausse alerte, abaisser le seuil à 0.3 permettrait d'augmenter significativement le Recall.
 
 Aucun monitoring de dérive des données n'est en place. En production, les distributions des capteurs évoluent avec le vieillissement des machines, et les performances du modèle se dégraderaient progressivement sans que rien ne le signale.
 
@@ -733,7 +725,7 @@ Les hyperparamètres ont été fixés manuellement. Une recherche par Randomized
 | Features déjà bien définies par des capteurs | Peu de valeur ajoutée dans l'apprentissage de représentations intermédiaires |
 | Données déséquilibrées | XGBoost gère le déséquilibre via `scale_pos_weight`, plus directement qu'un réseau |
 
-XGBoost (F1 = 0.898) surpasse le MLP (F1 = 0.850). Ce résultat est cohérent avec les travaux de Grinsztajn et al. (2022) qui montrent que les modèles à base d'arbres surpassent systématiquement le Deep Learning sur les données tabulaires structurées.
+XGBoost (F1 = 0.898) surpasse le MLP (F1 = 0.850).
 
 ### 15.4 Pistes d'amélioration prioritaires
 
@@ -777,4 +769,4 @@ Un Recall de 95.5 % signifie que le système détecte 19 pannes sur 20 avant qu'
 
 ### 16.4 Ce que ce projet nous a appris
 
-Au-delà des performances, ce projet illustre que les choix méthodologiques comptent autant que le choix de l'algorithme. La suppression des variables à risque de leakage, la gestion du déséquilibre de classes, le paramétrage du seuil de décision et l'explicabilité des résultats via SHAP sont des décisions qui déterminent si une solution Data Science peut réellement être utilisée en production ou si elle reste un exercice académique.
+Au-delà des performances, ce projet illustre que les choix méthodologiques comptent autant que le choix de l'algorithme. La suppression des variables à risque de leakage, la gestion du déséquilibre de classes, le paramétrage du seuil de décision très important du point de vue métier et l'explicabilité des résultats via SHAP sont des décisions qui déterminent si une solution Data Science peut réellement être utilisée en production ou si elle reste un exercice académique.
